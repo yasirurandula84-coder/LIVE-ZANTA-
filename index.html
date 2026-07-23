@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZANTA Live - Sports & LPL Streaming Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Shaka Player CDN (Supports both DASH with ClearKey and HLS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <style>
+        body { background-color: #0b0f19; color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glow-effect { box-shadow: 0 0 25px rgba(239, 68, 68, 0.2); }
+        .chat-box::-webkit-scrollbar { width: 6px; }
+        .chat-box::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-red-600 text-white font-bold p-2 rounded-lg text-xl flex items-center justify-center shadow-lg"><i class="fa-solid fa-bolt"></i></div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider text-white">ZANTA <span class="text-red-500">SPORTS</span></h1>
+                    <p class="text-xs text-gray-400">Live Streaming Hub</p>
+                </div>
+            </div>
+            <!-- Live Viewers Badge -->
+            <div class="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-full flex items-center space-x-2 shadow-inner">
+                <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+                <span class="text-xs text-gray-300 font-medium">Live Viewers: <strong id="viewerCount" class="text-white font-bold">185</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 w-full flex-grow">
+        
+        <!-- Left & Center: Player, Channel List & Info -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Category Tabs -->
+            <div class="flex space-x-2 overflow-x-auto pb-2">
+                <button onclick="filterCategory('cricket')" class="cat-btn bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md flex items-center space-x-2"><i class="fa-solid fa-cricket-bat-ball"></i> <span>Cricket / LPL</span></button>
+                <button onclick="filterCategory('football')" class="cat-btn bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition"><i class="fa-solid fa-futbol"></i> <span>Football</span></button>
+                <button onclick="filterCategory('other')" class="cat-btn bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition"><i class="fa-solid fa-tv"></i> <span>Other Channels</span></button>
+            </div>
+
+            <!-- Video Player Container -->
+            <div class="bg-black rounded-2xl overflow-hidden border border-gray-800 shadow-2xl relative glow-effect">
+                <video id="videoPlayer" class="w-full aspect-video" controls autoplay></video>
+            </div>
+
+            <!-- Channel Selector List (Channels from channels.js) -->
+            <div class="bg-gray-900 border border-gray-800 p-4 rounded-2xl space-y-3">
+                <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                    <i class="fa-solid fa-list text-red-500"></i>
+                    <span>Available Channels / Streams</span>
+                </h3>
+                <div id="channelList" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <!-- JavaScript හරහා චැනල් ලිස්ට් එක මෙතැනට වැටේ -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Live Interactive Chat -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col h-[600px] lg:h-auto shadow-xl">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-800 mb-3">
+                <h3 class="font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-comments text-red-500"></i>
+                    <span>Live Match Chat</span>
+                </h3>
+                <span id="chatStatus" class="text-xs text-gray-400">Connected</span>
+            </div>
+
+            <!-- Chat Messages Box -->
+            <div id="chatBox" class="chat-box flex-grow overflow-y-auto space-y-3 pr-2 mb-3 text-sm">
+                <div class="bg-gray-800/50 p-2.5 rounded-xl border border-gray-800">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-red-400 text-xs">ZANTA_Mod</span>
+                        <span class="text-[10px] text-gray-500">Just now</span>
+                    </div>
+                    <p class="text-gray-300">Welcome to ZANTA Live Hub! Send your support in chat 🔥</p>
+                </div>
+            </div>
+
+            <!-- Username & Chat Input Form -->
+            <form id="chatForm" class="space-y-2 pt-2 border-t border-gray-800">
+                <input type="text" id="usernameInput" placeholder="Enter your chat name..." required 
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500">
+                <div class="flex space-x-2">
+                    <input type="text" id="messageInput" placeholder="Type a message..." required 
+                        class="flex-grow bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow-md">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 border-t border-gray-800 py-4 text-center text-xs text-gray-500">
+        <p>&copy; 2026 ZANTA Live Hub. All rights reserved.</p>
+    </footer>
+
+    <!-- Include external channels data -->
+    <script src="channels.js"></script>
+
+    <!-- Player & UI Logic Script -->
+    <script>
+        let player;
+        
+        async function initPlayer() {
+            shaka.polyfill.installAll();
+            if (!shaka.Player.isBrowserSupported()) {
+                alert('Browser not supported for video streaming!');
+                return;
+            }
+
+            const video = document.getElementById('videoPlayer');
+            player = new shaka.Player(video);
+
+            player.addEventListener('error', (event) => {
+                console.error('Error code', event.detail.code, 'object', event.detail);
+            });
+
+            // Load default first channel
+            if (channelsData.length > 0) {
+                loadChannel(channelsData[0]);
+            }
+            renderChannelList('cricket');
+        }
+
+        async function loadChannel(channel) {
+            // Configure DRM if available (For .mpd ClearKey streams)
+            if (channel.drm) {
+                player.configure({
+                    drm: {
+                        clearKeys: {
+                            [channel.drm.keyId]: channel.drm.key
+                        }
+                    }
+                });
+            } else {
+                player.configure({ drm: { clearKeys: {} } }); // Clear DRM config for normal HLS/M3U8
+            }
+
+            try {
+                await player.load(channel.url);
+                console.log('Loaded channel:', channel.name);
+            } catch (e) {
+                console.error('Failed to load channel error:', e);
+            }
+        }
+
+        function renderChannelList(category) {
+            const listContainer = document.getElementById('channelList');
+            listContainer.innerHTML = '';
+
+            const filtered = channelsData.filter(ch => ch.category === category);
+            
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-gray-500 col-span-2 py-4 text-center">No channels available in this category yet.</p>`;
+                return;
+            }
+
+            filtered.forEach(ch => {
+                const btn = document.createElement('button');
+                btn.className = "bg-gray-800 hover:bg-gray-700/80 border border-gray-700/60 p-3 rounded-xl text-left transition flex justify-between items-center group";
+                btn.innerHTML = `
+                    <div>
+                        <span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded font-bold">${ch.subCategory}</span>
+                        <h4 class="text-sm font-bold text-white mt-1 group-hover:text-red-400 transition">${ch.name}</h4>
+                    </div>
+                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded font-semibold"><i class="fa-solid fa-play text-[8px]"></i> ${ch.badge}</span>
+                `;
+                btn.onclick = () => loadChannel(ch);
+                listContainer.appendChild(btn);
+            });
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = "cat-btn bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2";
+            });
+            event.currentTarget.className = "cat-btn bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md flex items-center space-x-2";
+            renderChannelList(cat);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initPlayer);
+
+        // Simulated Real-time Live Viewers Counter
+        setInterval(() => {
+            const currentViewers = Math.floor(Math.random() * (420 - 150 + 1)) + 150;
+            document.getElementById('viewerCount').innerText = currentViewers;
+        }, 5000);
+
+        // Chat System Logic
+        const chatForm = document.getElementById('chatForm');
+        const chatBox = document.getElementById('chatBox');
+        const usernameInput = document.getElementById('usernameInput');
+        const messageInput = document.getElementById('messageInput');
+
+        const savedName = localStorage.getItem('chat_username');
+        if (savedName) usernameInput.value = savedName;
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            const message = messageInput.value.trim();
+            if (!username || !message) return;
+
+            localStorage.setItem('chat_username', username);
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "bg-gray-800/50 p-2.5 rounded-xl border border-gray-800";
+            msgDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-red-400 text-xs">${escapeHtml(username)}</span>
+                    <span class="text-[10px] text-gray-500">Just now</span>
+                </div>
+                <p class="text-gray-300">${escapeHtml(message)}</p>
+            `;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            messageInput.value = '';
+        });
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
