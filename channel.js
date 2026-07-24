@@ -5,11 +5,11 @@ const channelsData = [
         category: "cricket",
         subCategory: "LPL",
         type: "mpd", // mpd හෝ m3u8
-        url: "https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/r9ipx2gmey/out/v1/72197084a22d4b8888925caa8b2a5129/cenc.mpd",
+        url: "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/tll6uwepxa/out/v1/a7f67cbb33df46539312956427343886/cenc.mpd",
         // DRM Keys තියෙනවා නම් මෙතන දාන්න (නැත්නම් හිස්ව තියන්න)
         drm: {
-            keyId: "53be1157d919b0313e270d1ed4186d87",
-            key: "44f686ac116d42983895204b978fefab"
+            keyId: "290e09c837da78d5cd961978d390515c",
+            key: "b748836c71e6a4ca68ef5b5652db6247"
         },
         badge: "ON AIR"
     },
